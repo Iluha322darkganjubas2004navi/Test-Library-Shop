@@ -9,5 +9,5 @@ public class User : BaseEntity
     public string Email { get; set; }
     public string Password { get; set; }
     public UserRole Role { get; set; }
-    public List<BookBorrowing> BorrowedBooks { get; set; } = new List<BookBorrowing>();
+    public ICollection<BookBorrowing> BorrowedBooks { get; set; }
 }

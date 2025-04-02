@@ -7,4 +7,5 @@ public class Author : BaseEntity
     public string LastName { get; set; }
     public DateTime DateOfBirth { get; set; }
     public string Country { get; set; }
+    public ICollection<Book> Books { get; set; }
 }
