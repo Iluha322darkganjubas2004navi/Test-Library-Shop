@@ -1,17 +1,46 @@
+using Library.API.Middlewares;
+using Library.Application;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(options =>
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+
+var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+
+builder.Services.AddSwaggerGen(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder =>
-        builder.WithOrigins("http://localhost:50448")
-               .AllowAnyMethod()
-               .AllowAnyHeader());
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+    options.EnableAnnotations();
 });
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigin");
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

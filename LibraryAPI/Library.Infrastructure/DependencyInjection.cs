@@ -1,4 +1,6 @@
 ﻿using Library.Infrastructure.Repositories;
+using Library.Infrastructure.Services.Interfaces;
+using Library.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -26,6 +28,8 @@ namespace Library.Infrastructure
             services.AddScoped<IBookRepository, BookRepository>();
             services.AddScoped<IGenreRepository, GenreRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<IFileStorage, FileStorageService>();
 
             return services;
         }
