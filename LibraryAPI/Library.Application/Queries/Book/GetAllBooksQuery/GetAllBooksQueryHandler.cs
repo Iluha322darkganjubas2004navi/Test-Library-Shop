@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Library.Application.Queries.Book.GetAllBooksQuery;
 using Library.Domain.DTOs;
 using Library.Infrastructure.Repositories;
 using MediatR;

@@ -1,5 +1,6 @@
 using Library.API.Middlewares;
 using Library.Application;
+using Library.Application.Queries.Book.GetAllBooksQuery;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -24,6 +25,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(GetAllBooksQueryHandler).Assembly));
 
 var app = builder.Build();
 

@@ -4,4 +4,4 @@ using System.Collections.Generic;
 
 namespace Library.Application.Queries.Book.GetAllBooksQuery;
 
-public sealed record GetAllBooksQuery() : IRequest<List<BookDTO>>;
+public sealed record GetAllBooksQuery() : IRequest<IEnumerable<BookDTO>>;

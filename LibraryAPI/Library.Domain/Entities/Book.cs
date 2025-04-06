@@ -10,5 +10,5 @@ public class Book : BaseEntity
     public Author Author { get; set; }
     public DateTime? BorrowedDate { get; set; }
     public DateTime? ReturnDate { get; set; }
-    public ICollection<Genre> Genres { get; set; }
+    public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 }
