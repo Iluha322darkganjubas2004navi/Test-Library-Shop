@@ -6,6 +6,7 @@ using Library.Application.Queries.Author.GetAllAuthorsQuery;
 using Library.Application.Queries.Author.GetAuthorByIdQuery;
 using Library.Domain.DTOs;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.API.Controllers;
@@ -17,15 +18,18 @@ public class AuthorController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpGet("GetAuthorById/{authorId:guid}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthorDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+
     public async Task<ActionResult<AuthorDTO>> GetAuthorById(Guid authorId)
     {
         return Ok(await _mediator.Send(new GetAuthorByIdQuery(authorId)));
     }
 
     [HttpGet("GetAllAuthors")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<AuthorDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<AuthorDTO>>> GetAllAuthors()
@@ -34,6 +38,7 @@ public class AuthorController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -43,6 +48,7 @@ public class AuthorController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -53,6 +59,7 @@ public class AuthorController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{authorId:guid}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]

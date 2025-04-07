@@ -9,4 +9,5 @@ public class CreateBook
     public DateTime? BorrowedDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public List<Guid> GenreIds { get; set; } = new List<Guid>();
+    public bool IsBorrowed { get; set; }
 }

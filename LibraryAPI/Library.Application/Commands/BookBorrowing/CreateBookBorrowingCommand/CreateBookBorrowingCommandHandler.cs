@@ -53,6 +53,8 @@ public class CreateBookBorrowingCommandHandler : IRequestHandler<CreateBookBorro
         }
 
         var bookBorrowing = _mapper.Map<Domain.Entities.BookBorrowing>(request.CreateBookBorrowingDto);
+        existingBook.IsBorrowed = true;
+        await _bookRepository.UpdateAsync(existingBook);
         await _bookBorrowingRepository.AddAsync(bookBorrowing);
         return _mapper.Map<BookBorrowingDTO>(bookBorrowing);
     }

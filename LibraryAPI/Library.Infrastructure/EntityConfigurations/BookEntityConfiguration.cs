@@ -19,6 +19,7 @@ namespace Library.Infrastructure.EntityConfigurations
             builder.Property(b => b.Title).IsRequired().HasMaxLength(200);
             builder.Property(b => b.Description).HasMaxLength(2000);
             builder.Property(b => b.AuthorId).IsRequired();
+            builder.Property(b => b.IsBorrowed).IsRequired().HasDefaultValue(false);
 
             builder.HasOne(b => b.Author).WithMany(a => a.Books).HasForeignKey(b => b.AuthorId);
 

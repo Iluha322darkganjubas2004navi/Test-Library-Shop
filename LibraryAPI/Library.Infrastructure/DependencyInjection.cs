@@ -28,8 +28,10 @@ namespace Library.Infrastructure
             services.AddScoped<IBookRepository, BookRepository>();
             services.AddScoped<IGenreRepository, GenreRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddScoped<IFileStorage, FileStorageService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             return services;
         }

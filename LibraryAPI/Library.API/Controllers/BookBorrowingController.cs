@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Library.API.Controllers;
 
@@ -21,6 +22,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpGet("GetBookBorrowingById/{borrowingId:guid}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(BookBorrowingDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -30,6 +32,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("GetBookBorrowingsByBookId/{bookId:guid}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(IEnumerable<BookBorrowingDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetAllBookBorrowingsByBookId(Guid bookId)
@@ -38,6 +41,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("GetBookBorrowingsByUserId/{userId:guid}")]
+    [Authorize(Policy = "UserOnly")]
     [ProducesResponseType(typeof(IEnumerable<BookBorrowingDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetBookBorrowingsByUserId(Guid userId)
@@ -46,6 +50,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -55,6 +60,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -65,6 +71,7 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{borrowingId:guid}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]

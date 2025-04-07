@@ -21,6 +21,7 @@ namespace Library.Infrastructure.EntityConfigurations
             builder.Property(u => u.Role).IsRequired();
 
             builder.HasMany(u => u.BorrowedBooks).WithOne(o => o.User).HasForeignKey(o => o.UserId);
+            builder.HasMany(u => u.RefreshTokens).WithOne(o => o.User).HasForeignKey(o => o.UserId);
         }
     }
 }

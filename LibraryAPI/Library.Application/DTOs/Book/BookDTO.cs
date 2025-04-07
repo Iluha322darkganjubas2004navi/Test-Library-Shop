@@ -10,4 +10,5 @@ public class BookDTO
     public DateTime? BorrowedDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public List<GenreDTO> Genres { get; set; } = new List<GenreDTO>();
+    public bool IsBorrowed { get; set; }
 }

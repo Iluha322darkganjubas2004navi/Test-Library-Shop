@@ -1,55 +1,56 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using AutoMapper;
+﻿using AutoMapper;
 using Library.Application.Commands.Authorization.Login;
+using Library.Application.DTOs.Authorization;
 using Library.Application.Exceptions;
+using Library.Domain.Entities;
+using Library.Infrastructure.Repositories;
+using Library.Infrastructure.Services;
+using Library.Infrastructure.Services.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Library.Infrastructure.Repositories;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Library.Application.Commands.Authorization.Login;
 
-public class LoginCommandHandler(IConfiguration configuration, IUserRepository repository, IMapper mapper) : IRequestHandler<LoginCommand, string>
+public class LoginCommandHandler(
+    IConfiguration configuration,
+    IUserRepository repository,
+    IMapper mapper,
+    IRefreshTokenRepository refreshTokenRepository,
+    ITokenService tokenService
+) : IRequestHandler<LoginCommand, AuthenticationResult>
 {
-    public async Task<string> Handle(LoginCommand request, CancellationToken cancellationToken)
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IUserRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
+    private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
+    private readonly ITokenService _tokenService = tokenService; // Сохраняем внедренный сервис
+
+    public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await repository.GetUserAsync(u =>
-            u.Name == request.loginRequest.Name && u.Password == Hash(request.loginRequest.Password));
+        var user = await _repository.GetUserAsync(u =>
+            u.Name == request.loginRequest.Name && u.Password == _tokenService.Hash(request.loginRequest.Password));
 
         if (user == null)
             throw new NotFoundException("User not found or invalid credentials");
 
-        var claims = new List<Claim>
+        var accessToken = _tokenService.GenerateJwtToken(user);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        var refreshTokenEntity = new Library.Domain.Entities.RefreshToken
         {
-            new ("id", user.Id.ToString()),
-            new ("name", user.Name),
-            new ("role", user.Role.ToString())
+            UserId = user.Id,
+            Token = refreshToken,
+            ExpiryDate = DateTime.UtcNow.AddDays(7),
+            IsUsed = false,
+            IsRevoked = false,
+            AddedDate = DateTime.UtcNow
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? string.Empty));
-        var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        await _refreshTokenRepository.AddAsync(refreshTokenEntity);
 
-        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
-            configuration["Jwt:Issuer"],
-            configuration["Jwt:Audience"],
-            claims,
-            expires: DateTime.UtcNow.AddDays(1),
-            signingCredentials: signIn));
-    }
-
-    private string Hash(string inputString)
-    {
-        using (var sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(inputString));
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in bytes)
-                sb.Append(b.ToString("x2"));
-
-            return sb.ToString();
-        }
+        return new AuthenticationResult(accessToken, refreshToken);
     }
 }

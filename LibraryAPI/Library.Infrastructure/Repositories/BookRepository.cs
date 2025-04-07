@@ -19,4 +19,16 @@ public class BookRepository(AppDbContext dbContext) : BaseRepository<Book>(dbCon
     {
         return await _dbSet.FirstOrDefaultAsync(book => book.ISBN == isbn);
     }
+    public async Task<Book?> GetBookByIdAsync(Guid id)
+    {
+        return await _dbSet
+            .Include(b => b.Genres)
+            .Include(b => b.Author)
+            .FirstOrDefaultAsync(book => book.Id == id);
+    }
+    public IQueryable<Book> Query()
+    {
+        return _dbSet.Include(b => b.Genres)
+                     .Include(b => b.Author);
+    }
 }

@@ -17,7 +17,8 @@ public class BookProfile : Profile
             .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
             .ForMember(dest => dest.BorrowedDate, opt => opt.MapFrom(src => src.BorrowedDate))
             .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
-            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.Select(g => new GenreDTO { Id = g.Id, Name = g.Name })));
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.Select(g => new GenreDTO { Id = g.Id, Name = g.Name })))
+            .ForMember(dest => dest.IsBorrowed, opt => opt.MapFrom(src => src.IsBorrowed));
 
         CreateMap<BookDTO, Book>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -27,6 +28,7 @@ public class BookProfile : Profile
             .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
             .ForMember(dest => dest.BorrowedDate, opt => opt.MapFrom(src => src.BorrowedDate))
             .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
+            .ForMember(dest => dest.IsBorrowed, opt => opt.MapFrom(src => src.IsBorrowed))
             .ForMember(dest => dest.Genres, opt => opt.Ignore())
             .ForMember(dest => dest.Author, opt => opt.Ignore());
 
@@ -37,6 +39,7 @@ public class BookProfile : Profile
             .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
             .ForMember(dest => dest.BorrowedDate, opt => opt.MapFrom(src => src.BorrowedDate))
             .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
+            .ForMember(dest => dest.IsBorrowed, opt => opt.MapFrom(src => false))
             .ForMember(dest => dest.Genres, opt => opt.Ignore())
             .ForMember(dest => dest.Author, opt => opt.Ignore());
 
@@ -48,6 +51,7 @@ public class BookProfile : Profile
             .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
             .ForMember(dest => dest.BorrowedDate, opt => opt.MapFrom(src => src.BorrowedDate))
             .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
+            .ForMember(dest => dest.IsBorrowed, opt => opt.MapFrom(src => src.IsBorrowed))
             .ForMember(dest => dest.Genres, opt => opt.Ignore())
             .ForMember(dest => dest.Author, opt => opt.Ignore());
     }
