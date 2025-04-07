@@ -1,19 +1,33 @@
-# Используем официальный образ .NET SDK в качестве базового для сборки
+# См. статью по ссылке https://aka.ms/customizecontainer, чтобы узнать как настроить контейнер отладки и как Visual Studio использует этот Dockerfile для создания образов для ускорения отладки.
+
+# Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+
+# Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["Library.API/Library.API.csproj", "Library.API/"]
+COPY ["Library.Infrastructure/Library.Infrastructure.csproj", "Library.Infrastructure/"]
+COPY ["Library.Domain/Library.Domain.csproj", "Library.Domain/"]
+COPY ["Library.Application/Library.Application.csproj", "Library.Application/"]
+RUN dotnet restore "./Library.API/Library.API.csproj"
+COPY . .
+WORKDIR "/src/Library.API"
+RUN dotnet build "./Library.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Library.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
+FROM base AS final
 WORKDIR /app
-
-# Копируем файл проекта и восстанавливаем зависимости
-COPY Library.API.csproj ./
-RUN dotnet restore
-
-# Копируем весь остальной исходный код
-COPY . ./
-
-# Публикуем приложение
-RUN dotnet publish -c Release -o out
-
-# Используем официальный образ ASP.NET Core Runtime для запуска
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-COPY --from=build /app/out ./
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Library.API.dll"]

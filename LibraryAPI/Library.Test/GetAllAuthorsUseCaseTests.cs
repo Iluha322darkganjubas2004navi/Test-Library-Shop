@@ -93,7 +93,7 @@ namespace Library.Tests.UseCases
             var exception = await Assert.ThrowsAsync<Exception>(() => handler.Handle(query, CancellationToken.None));
             Assert.Equal(expectedException.Message, exception.Message);
             authorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(It.IsAny<List<Author>>()), Times.Never); // Маппинг не вызывается при ошибке репозитория
+            mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(It.IsAny<List<Author>>()), Times.Never);
         }
     }
 }

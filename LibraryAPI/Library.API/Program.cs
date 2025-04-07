@@ -4,10 +4,12 @@ using Library.Application.Queries.Book.GetAllBooksQuery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Добавляем необходимые сервисы
 builder.Services.AddInfrastructure(builder.Configuration);
