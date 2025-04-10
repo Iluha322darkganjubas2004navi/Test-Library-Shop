@@ -8,6 +8,7 @@ using Library.Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace Library.API.Controllers;
 
@@ -20,51 +21,40 @@ public class AuthorController(IMediator mediator) : ControllerBase
     [HttpGet("GetAuthorById/{authorId:guid}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthorDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-
-    public async Task<ActionResult<AuthorDTO>> GetAuthorById(Guid authorId)
+    public async Task<ActionResult<AuthorDTO>> GetAuthorById(Guid authorId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetAuthorByIdQuery(authorId)));
+        return Ok(await _mediator.Send(new GetAuthorByIdQuery(authorId), cancellationToken));
     }
 
     [HttpGet("GetAllAuthors")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<AuthorDTO>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<AuthorDTO>>> GetAllAuthors()
+    public async Task<ActionResult<IEnumerable<AuthorDTO>>> GetAllAuthors(CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetAllAuthorsQuery()));
+        return Ok(await _mediator.Send(new GetAllAuthorsQuery(), cancellationToken));
     }
 
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> CreateAuthor([FromBody] CreateAuthorCommand request)
+    public async Task<ActionResult<bool>> CreateAuthor([FromBody] CreateAuthorCommand request, CancellationToken cancellationToken)
     {
-        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request));
+        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request, cancellationToken));
     }
 
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> UpdateAuthor([FromBody] UpdateAuthorCommand updateAuthorDto)
+    public async Task<ActionResult<bool>> UpdateAuthor([FromBody] UpdateAuthorCommand updateAuthorDto, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(updateAuthorDto));
+        return Ok(await _mediator.Send(updateAuthorDto, cancellationToken));
     }
 
     [HttpDelete("{authorId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> DeleteAuthor(Guid authorId)
+    public async Task<ActionResult<bool>> DeleteAuthor(Guid authorId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new DeleteAuthorCommand(authorId)));
+        return Ok(await _mediator.Send(new DeleteAuthorCommand(authorId), cancellationToken));
     }
 }

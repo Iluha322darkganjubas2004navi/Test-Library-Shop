@@ -1,4 +1,5 @@
-﻿using Library.Application.Commands.Authorization.RefreshToken;
+﻿using FluentValidation;
+using Library.Application.Commands.Authorization.RefreshToken;
 using Library.Application.DTOs.Authorization;
 using Library.Domain.Entities;
 using Library.Infrastructure.Repositories;
@@ -16,46 +17,42 @@ public class RefreshTokenCommandHandler(
     IConfiguration configuration,
     IUserRepository userRepository,
     IRefreshTokenRepository refreshTokenRepository,
-    ITokenService tokenService
+    ITokenService tokenService,
+    IValidator<RefreshTokenCommand> validator
 ) : IRequestHandler<RefreshTokenCommand, AuthenticationResult?>
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly ITokenService _tokenService = tokenService;
+    private readonly IValidator<RefreshTokenCommand> _validator = validator;
 
     public async Task<AuthenticationResult?> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(request.refreshTokenRequest.RefreshToken);
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
 
-        if (refreshToken == null || refreshToken.IsUsed || refreshToken.IsRevoked || refreshToken.ExpiryDate <= DateTime.UtcNow)
+        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(request.refreshTokenRequest.RefreshToken, cancellationToken);
+
+        if (refreshToken == null || refreshToken.IsRevoked || refreshToken.ExpiryDate <= DateTime.UtcNow)
         {
             return null; // Refresh Token недействителен
         }
 
-        var user = await _userRepository.GetByIdAsync(refreshToken.UserId);
+        var user = await _userRepository.GetByIdAsync(refreshToken.UserId, cancellationToken);
         if (user == null)
         {
             return null;
         }
 
         refreshToken.IsUsed = true;
-        _refreshTokenRepository.UpdateAsync(refreshToken);
-
+        refreshToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
         var newAccessToken = _tokenService.GenerateJwtToken(user);
-        var newRefreshToken = _tokenService.GenerateRefreshToken();
+        await _refreshTokenRepository.UpdateAsync(refreshToken, cancellationToken);
 
-        var newRefreshTokenEntity = new Library.Domain.Entities.RefreshToken
-        {
-            UserId = user.Id,
-            Token = newRefreshToken,
-            ExpiryDate = DateTime.UtcNow.AddDays(7),
-            IsUsed = false,
-            IsRevoked = false,
-            AddedDate = DateTime.UtcNow
-        };
-        await _refreshTokenRepository.AddAsync(newRefreshTokenEntity);
-
-        return new AuthenticationResult(newAccessToken, newRefreshToken);
+        return new AuthenticationResult(newAccessToken, refreshToken.Token);
     }
 }

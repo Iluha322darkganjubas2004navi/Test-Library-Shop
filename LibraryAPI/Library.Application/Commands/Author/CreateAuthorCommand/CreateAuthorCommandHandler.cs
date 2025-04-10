@@ -33,7 +33,7 @@ public class CreateAuthorCommandHandler : IRequestHandler<CreateAuthorCommand, A
         }
 
         var author = _mapper.Map<Domain.Entities.Author>(request.CreateAuthorDto);
-        await _authorRepository.AddAsync(author);
-        return _mapper.Map<AuthorDTO>(author);
+        var createdAuthor = await _authorRepository.AddAsync(author, cancellationToken);
+        return _mapper.Map<AuthorDTO>(createdAuthor);
     }
 }

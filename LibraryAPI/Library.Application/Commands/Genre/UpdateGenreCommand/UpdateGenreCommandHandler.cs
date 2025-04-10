@@ -32,14 +32,14 @@ public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, Gen
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingGenre = await _genreRepository.GetByIdAsync(request.UpdateGenreDto.Id);
+        var existingGenre = await _genreRepository.GetByIdAsync(request.UpdateGenreDto.Id, cancellationToken);
         if (existingGenre == null)
         {
             throw new NotFoundException($"Genre with id '{request.UpdateGenreDto.Id}' not found.");
         }
 
         _mapper.Map(request.UpdateGenreDto, existingGenre);
-        await _genreRepository.UpdateAsync(existingGenre);
+        await _genreRepository.UpdateAsync(existingGenre, cancellationToken);
         return _mapper.Map<GenreDTO>(existingGenre);
     }
 }

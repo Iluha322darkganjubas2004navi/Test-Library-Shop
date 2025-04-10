@@ -31,7 +31,7 @@ public class GetAuthorByIdQueryHandler : IRequestHandler<GetAuthorByIdQuery, Aut
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.AuthorId);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.AuthorId, cancellationToken);
 
         if (existingAuthor == null)
         {

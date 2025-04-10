@@ -41,13 +41,13 @@ public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, BookD
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.CreateBookDto.AuthorId);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.CreateBookDto.AuthorId, cancellationToken);
         if (existingAuthor == null)
         {
             throw new NotFoundException($"Author with id '{request.CreateBookDto.AuthorId}' not found.");
         }
 
-        var allGenres = await _genreRepository.GetAllAsync();
+        var allGenres = await _genreRepository.GetAllAsync(cancellationToken);
 
         var existingGenres = allGenres.Where(g => request.CreateBookDto.GenreIds.Contains(g.Id)).ToList();
 
@@ -61,13 +61,13 @@ public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, BookD
         var book = _mapper.Map<Domain.Entities.Book>(request.CreateBookDto);
         book.Author = existingAuthor;
 
-        await _bookRepository.AddAsync(book);
+        await _bookRepository.AddAsync(book, cancellationToken);
 
         foreach (var genre in existingGenres)
         {
             book.Genres.Add(genre);
         }
-        await _bookRepository.UpdateAsync(book);
+        await _bookRepository.UpdateAsync(book, cancellationToken);
 
         return _mapper.Map<BookDTO>(book);
     }

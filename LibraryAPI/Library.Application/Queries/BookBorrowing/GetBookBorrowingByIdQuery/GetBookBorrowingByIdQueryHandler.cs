@@ -23,7 +23,7 @@ public class GetBookBorrowingByIdQueryHandler : IRequestHandler<GetBookBorrowing
 
     public async Task<BookBorrowingDTO> Handle(GetBookBorrowingByIdQuery request, CancellationToken cancellationToken)
     {
-        var bookBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.BorrowingId);
+        var bookBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.BorrowingId, cancellationToken);
 
         if (bookBorrowing == null)
         {

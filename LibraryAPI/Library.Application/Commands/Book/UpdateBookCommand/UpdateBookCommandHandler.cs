@@ -41,19 +41,19 @@ public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, BookD
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingBook = await _bookRepository.GetByIdAsync(request.UpdateBookDto.Id);
+        var existingBook = await _bookRepository.GetByIdAsync(request.UpdateBookDto.Id, cancellationToken);
         if (existingBook == null)
         {
             throw new NotFoundException($"Book with id '{request.UpdateBookDto.Id}' not found.");
         }
 
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.UpdateBookDto.AuthorId);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.UpdateBookDto.AuthorId, cancellationToken);
         if (existingAuthor == null)
         {
             throw new NotFoundException($"Author with id '{request.UpdateBookDto.AuthorId}' not found.");
         }
 
-        var allGenres = await _genreRepository.GetAllAsync();
+        var allGenres = await _genreRepository.GetAllAsync(cancellationToken);
         var existingGenres = allGenres.Where(g => request.UpdateBookDto.GenreIds.Contains(g.Id)).ToList();
 
         if (existingGenres.Count != request.UpdateBookDto.GenreIds.Count)
@@ -72,7 +72,7 @@ public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, BookD
             existingBook.Genres.Add(genre);
         }
 
-        await _bookRepository.UpdateAsync(existingBook);
+        await _bookRepository.UpdateAsync(existingBook, cancellationToken);
 
         return _mapper.Map<BookDTO>(existingBook);
     }

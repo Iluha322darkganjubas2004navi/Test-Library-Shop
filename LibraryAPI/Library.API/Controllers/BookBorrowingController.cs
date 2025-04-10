@@ -24,59 +24,48 @@ public class BookBorrowingController(IMediator mediator) : ControllerBase
     [HttpGet("GetBookBorrowingById/{borrowingId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(BookBorrowingDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<BookBorrowingDTO>> GetBookBorrowingById(Guid borrowingId)
+    public async Task<ActionResult<BookBorrowingDTO>> GetBookBorrowingById(Guid borrowingId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetBookBorrowingByIdQuery(borrowingId)));
+        return Ok(await _mediator.Send(new GetBookBorrowingByIdQuery(borrowingId), cancellationToken));
     }
 
     [HttpGet("GetBookBorrowingsByBookId/{bookId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(IEnumerable<BookBorrowingDTO>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetAllBookBorrowingsByBookId(Guid bookId)
+    public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetAllBookBorrowingsByBookId(Guid bookId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetAllBookBorrowingsByBookIdQuery(bookId)));
+        return Ok(await _mediator.Send(new GetAllBookBorrowingsByBookIdQuery(bookId), cancellationToken));
     }
 
     [HttpGet("GetBookBorrowingsByUserId/{userId:guid}")]
     [Authorize(Policy = "UserOnly")]
     [ProducesResponseType(typeof(IEnumerable<BookBorrowingDTO>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetBookBorrowingsByUserId(Guid userId)
+    public async Task<ActionResult<IEnumerable<BookBorrowingDTO>>> GetBookBorrowingsByUserId(Guid userId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetAllBookBorrowingsByUserIdQuery(userId)));
+        return Ok(await _mediator.Send(new GetAllBookBorrowingsByUserIdQuery(userId), cancellationToken));
     }
 
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> CreateBookBorrowing([FromBody] CreateBookBorrowingCommand request)
+    public async Task<ActionResult<bool>> CreateBookBorrowing([FromBody] CreateBookBorrowingCommand request, CancellationToken cancellationToken)
     {
-        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request));
+        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request, cancellationToken));
     }
 
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> UpdateBookBorrowing([FromBody] UpdateBookBorrowingCommand updateBookBorrowingDto)
+    public async Task<ActionResult<bool>> UpdateBookBorrowing([FromBody] UpdateBookBorrowingCommand updateBookBorrowingDto, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(updateBookBorrowingDto));
+        return Ok(await _mediator.Send(updateBookBorrowingDto, cancellationToken));
     }
 
     [HttpDelete("{borrowingId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> DeleteBookBorrowing(Guid borrowingId)
+    public async Task<ActionResult<bool>> DeleteBookBorrowing(Guid borrowingId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new DeleteBookBorrowingCommand(borrowingId)));
+        return Ok(await _mediator.Send(new DeleteBookBorrowingCommand(borrowingId), cancellationToken));
     }
 }

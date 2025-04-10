@@ -18,13 +18,13 @@ public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, boo
 
     public async Task<bool> Handle(DeleteGenreCommand request, CancellationToken cancellationToken)
     {
-        var existingGenre = await _genreRepository.GetByIdAsync(request.Id);
+        var existingGenre = await _genreRepository.GetByIdAsync(request.Id, cancellationToken);
         if (existingGenre == null)
         {
             throw new NotFoundException($"Genre with id '{request.Id}' not found.");
         }
 
-        await _genreRepository.DeleteAsync(existingGenre);
+        await _genreRepository.DeleteAsync(existingGenre, cancellationToken);
         return true;
     }
 }

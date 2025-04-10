@@ -17,51 +17,40 @@ public class UserController(IMediator mediator) : ControllerBase
     [HttpGet("GetUserById/{userId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<UserDTO>> GetUserById(Guid userId)
+    public async Task<ActionResult<UserDTO>> GetUserById(Guid userId, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new GetUserByIdQuery(userId)));
+        return Ok(await mediator.Send(new GetUserByIdQuery(userId), cancellationToken));
     }
 
     [HttpGet("GetAllUsers")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<UserDTO>> GetAllUsers()
+    public async Task<ActionResult<UserDTO>> GetAllUsers(CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new GetAllUsersQuery()));
+        return Ok(await mediator.Send(new GetAllUsersQuery(), cancellationToken));
     }
 
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> CreateUser([FromBody] CreateUser request)
+    public async Task<ActionResult<bool>> CreateUser([FromBody] CreateUser request, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new CreateUserCommand(request)));
+        return Ok(await mediator.Send(new CreateUserCommand(request), cancellationToken));
     }
 
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> UpdateUser([FromBody] UpdateUser updateUserDto)
+    public async Task<ActionResult<bool>> UpdateUser([FromBody] UpdateUser updateUserDto, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new UpdateUserCommand(updateUserDto)));
+        return Ok(await mediator.Send(new UpdateUserCommand(updateUserDto), cancellationToken));
     }
 
     [HttpDelete("{userId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> DeleteUser(Guid userId)
+    public async Task<ActionResult<bool>> DeleteUser(Guid userId, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new DeleteUserCommand(userId)));
+        return Ok(await mediator.Send(new DeleteUserCommand(userId), cancellationToken));
     }
 }

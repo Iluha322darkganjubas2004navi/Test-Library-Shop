@@ -11,12 +11,13 @@ namespace Library.Infrastructure.Services
     {
         private const string RootLocation = "uploads";
 
-        public async Task<Stream> GetFileStreamAsync(string relativePath)
+        public async Task<Stream> GetFileStreamAsync(string relativePath, CancellationToken cancellationToken)
         {
             var filePath = Path.Combine(RootLocation, relativePath);
             if (!File.Exists(filePath))
                 filePath = Path.Combine(RootLocation, "defaultIcon.png");
 
+            cancellationToken.ThrowIfCancellationRequested();
             return await Task.FromResult(File.OpenRead(filePath));
         }
 

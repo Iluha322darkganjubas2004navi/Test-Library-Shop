@@ -34,13 +34,13 @@ public class GetBooksByAuthorIdQueryHandler : IRequestHandler<GetBooksByAuthorId
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.AuthorId);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.AuthorId, cancellationToken);
         if (existingAuthor == null)
         {
             throw new NotFoundException($"Author with id '{request.AuthorId}' not found.");
         }
 
-        var books = await _bookRepository.GetBooksByAuthorIdAsync(request.AuthorId);
+        var books = await _bookRepository.GetBooksByAuthorIdAsync(request.AuthorId, cancellationToken);
         return _mapper.Map<IEnumerable<BookDTO>>(books);
     }
 }

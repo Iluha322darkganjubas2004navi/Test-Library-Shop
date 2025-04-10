@@ -8,61 +8,56 @@ using MediatR;
 using Library.Application.Exceptions;
 using Library.Domain.Enums;
 using Library.Infrastructure.Repositories;
+using Library.Infrastructure.Services.Interfaces;
+using FluentValidation;
 
 namespace Library.Application.Commands.Authorization.Register;
 
-public class RegisterCommandHandler(IUserRepository repository, IMapper mapper) : IRequestHandler<RegisterCommand, bool>
+public class RegisterCommandHandler(
+    IUserRepository repository,
+    IMapper mapper,
+    ITokenService tokenService,
+    IValidator<RegisterCommand> validator // Внедрили валидатор
+) : IRequestHandler<RegisterCommand, bool>
 {
+    private readonly IUserRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IValidator<RegisterCommand> _validator = validator; // Сохранили валидатор
+
     public async Task<bool> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
+        // Выполняем валидацию
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
 
-        if (request.registerRequest.Password != request.registerRequest.PasswordRepeat)
-            throw new BadRequestException("Passwords do not match");
-
-        if (await IsLoginUnique(request.registerRequest.Name))
+        if (await IsLoginUnique(request.registerRequest.Name, cancellationToken))
             throw new BadRequestException("There is already a user with this login in the system");
 
-        var existingUser = await repository.GetUserByEmailAsync(request.registerRequest.Email);
+        var existingUser = await _repository.GetUserByEmailAsync(request.registerRequest.Email, cancellationToken);
 
         if (existingUser != null)
         {
             throw new BadRequestException("User with this email already exists");
         }
 
-        if (request.registerRequest.Name.Length is < 4 or > 32)
-            throw new BadRequestException("Login length must be between 4 and 32 characters.");
+        request.registerRequest.Password = _tokenService.Hash(request.registerRequest.Password);
 
-        if (request.registerRequest.Password.Length is < 4 or > 32)
-            throw new BadRequestException("Password length must be between 4 and 32 characters.");
-
-        request.registerRequest.Password = Hash(request.registerRequest.Password);
-
-        var user = mapper.Map<Domain.Entities.User>(request.registerRequest);
+        var user = _mapper.Map<Domain.Entities.User>(request.registerRequest);
 
         user.Role = UserRole.User;
 
-        await repository.AddAsync(user);
+        await _repository.AddAsync(user, cancellationToken);
 
         return true;
     }
 
-    private async Task<bool> IsLoginUnique(string login)
+    private async Task<bool> IsLoginUnique(string login, CancellationToken cancellationToken)
     {
-        var user = await repository.GetUserByLoginAsync(login);
-
+        var user = await _repository.GetUserByLoginAsync(login, cancellationToken);
         return user != null;
-    }
-
-    private string Hash(string inputString)
-    {
-        using (var sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(inputString));
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in bytes)
-                sb.Append(b.ToString("x2"));
-
-            return sb.ToString();
-        }
     }
 }

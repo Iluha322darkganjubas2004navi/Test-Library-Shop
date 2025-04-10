@@ -34,7 +34,7 @@ namespace Library.Application.Commands.User.CreateUserCommand
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var existingUser = await _userRepository.GetUserByEmailAsync(request.createUserDTO.Email);
+            var existingUser = await _userRepository.GetUserByEmailAsync(request.createUserDTO.Email, cancellationToken);
 
             if (existingUser != null)
             {
@@ -42,7 +42,7 @@ namespace Library.Application.Commands.User.CreateUserCommand
             }
 
             var user = _mapper.Map<Domain.Entities.User>(request.createUserDTO);
-            await _userRepository.AddAsync(user);
+            await _userRepository.AddAsync(user, cancellationToken);
 
             return true;
         }

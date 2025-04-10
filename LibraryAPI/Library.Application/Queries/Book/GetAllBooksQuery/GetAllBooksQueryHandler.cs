@@ -22,17 +22,17 @@ public class GetAllBooksQueryHandler : IRequestHandler<GetAllBooksQuery, Paginat
 
     public async Task<PaginatedResult<BookDTO>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
     {
-        var query = _bookRepository.Query();
+        var allBooks = await _bookRepository.GetAllBooksWithDetailsAsync(cancellationToken);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var books = await query
+        var totalCount = allBooks.Count;
+        var paginatedBooks = allBooks
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new PaginatedResult<BookDTO>
         {
-            Items = _mapper.Map<IEnumerable<BookDTO>>(books),
+            Items = _mapper.Map<IEnumerable<BookDTO>>(paginatedBooks),
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize

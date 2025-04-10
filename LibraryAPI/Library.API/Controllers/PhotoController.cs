@@ -11,10 +11,9 @@ public class PhotoController(IMediator mediator) : ControllerBase
     [HttpPost("HandleFileUpload/{bookId}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> HandleFileUpload([FromRoute] Guid bookId, IFormFile file)
+    public async Task<IActionResult> HandleFileUpload([FromRoute] Guid bookId, IFormFile file, CancellationToken cancellationToken)
     {
-        await mediator.Send(new UploadPhotoCommand(bookId, file));
+        await mediator.Send(new UploadPhotoCommand(bookId, file), cancellationToken);
 
         return Ok("Uploaded successfully");
     }
@@ -22,10 +21,9 @@ public class PhotoController(IMediator mediator) : ControllerBase
     [HttpGet("GetPhoto/{bookId}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetPhoto([FromRoute] Guid bookId)
+    public async Task<IActionResult> GetPhoto([FromRoute] Guid bookId, CancellationToken cancellationToken)
     {
-        var photoStream = await mediator.Send(new GetPhotoQuery(bookId));
+        var photoStream = await mediator.Send(new GetPhotoQuery(bookId), cancellationToken);
 
         return File(photoStream, "image/jpeg");
     }

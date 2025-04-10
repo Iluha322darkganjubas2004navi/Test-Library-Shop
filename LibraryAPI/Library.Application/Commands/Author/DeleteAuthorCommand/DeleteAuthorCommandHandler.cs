@@ -18,13 +18,13 @@ public class DeleteAuthorCommandHandler : IRequestHandler<DeleteAuthorCommand, b
 
     public async Task<bool> Handle(DeleteAuthorCommand request, CancellationToken cancellationToken)
     {
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.Id);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.Id, cancellationToken);
         if (existingAuthor == null)
         {
             throw new NotFoundException($"Author with id '{request.Id}' not found.");
         }
 
-        await _authorRepository.DeleteAsync(existingAuthor);
+        await _authorRepository.DeleteAsync(existingAuthor, cancellationToken);
         return true;
     }
 }

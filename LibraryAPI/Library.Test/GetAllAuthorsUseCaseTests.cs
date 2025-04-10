@@ -29,8 +29,8 @@ namespace Library.Tests.UseCases
         public async Task Execute_NoAuthorsExist_ReturnsEmptyIEnumerableOfAuthorDTO()
         {
             // Arrange
-            authorRepositoryMock.Setup(repo => repo.GetAllAsync())
-                                .ReturnsAsync(new List<Author>());
+            authorRepositoryMock.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Author>());
 
             var query = new GetAllAuthorsQuery();
 
@@ -39,8 +39,8 @@ namespace Library.Tests.UseCases
 
             // Assert
             Assert.Empty(result);
-            authorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(It.IsAny<List<Author>>()), Times.Once); // Маппинг вызывается даже для пустого списка (возвращает пустой IEnumerable)
+            authorRepositoryMock.Verify(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(It.IsAny<List<Author>>()), Times.Once);
         }
 
         [Fact]
@@ -59,11 +59,11 @@ namespace Library.Tests.UseCases
                 new AuthorDTO { Id = authors[1].Id, FirstName = authors[1].FirstName, LastName = authors[1].LastName }
             };
 
-            authorRepositoryMock.Setup(repo => repo.GetAllAsync())
-                                .ReturnsAsync(authors);
+            authorRepositoryMock.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authors);
 
             mapperMock.Setup(m => m.Map<IEnumerable<AuthorDTO>>(authors))
-                      .Returns(authorDTOs);
+                .Returns(authorDTOs);
 
             var query = new GetAllAuthorsQuery();
 
@@ -75,7 +75,7 @@ namespace Library.Tests.UseCases
             Assert.Equal(authors.Count, result.Count());
             Assert.Equal(authorDTOs.First().Id, result.First().Id);
             Assert.Equal(authorDTOs.Last().LastName, result.Last().LastName);
-            authorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
+            authorRepositoryMock.Verify(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
             mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(authors), Times.Once);
         }
 
@@ -84,15 +84,15 @@ namespace Library.Tests.UseCases
         {
             // Arrange
             var expectedException = new Exception("Database error while fetching authors");
-            authorRepositoryMock.Setup(repo => repo.GetAllAsync())
-                                .ThrowsAsync(expectedException);
+            authorRepositoryMock.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(expectedException);
 
             var query = new GetAllAuthorsQuery();
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<Exception>(() => handler.Handle(query, CancellationToken.None));
             Assert.Equal(expectedException.Message, exception.Message);
-            authorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
+            authorRepositoryMock.Verify(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
             mapperMock.Verify(m => m.Map<IEnumerable<AuthorDTO>>(It.IsAny<List<Author>>()), Times.Never);
         }
     }

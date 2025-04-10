@@ -3,10 +3,10 @@
 [AutoInterface(Inheritance = [typeof(IBaseRepository<Genre>)])]
 public class GenreRepository(AppDbContext dbContext) : BaseRepository<Genre>(dbContext), IGenreRepository
 {
-    public async Task<List<Genre>> GetGenresByBookIdAsync(Guid bookId)
+    public async Task<List<Genre>> GetGenresByBookIdAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Where(genre => genre.Books.Any(book => book.Id == bookId))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

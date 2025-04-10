@@ -32,7 +32,7 @@ public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, BookDTO
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingBook = await _bookRepository.GetBookByIdAsync(request.BookId);
+        var existingBook = await _bookRepository.GetBookByIdAsync(request.BookId, cancellationToken);
 
         if (existingBook == null)
         {

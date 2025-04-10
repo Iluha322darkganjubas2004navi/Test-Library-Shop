@@ -11,7 +11,7 @@ public class GetAllUsersQueryHandler(IUserRepository userRepository, IMapper map
 {
     public async Task<IEnumerable<UserDTO>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
-        var userList = await userRepository.GetAllAsync();
+        var userList = await userRepository.GetAllAsync(cancellationToken);
 
         return mapper.Map<IEnumerable<UserDTO>>(userList);
     }

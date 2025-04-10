@@ -35,13 +35,13 @@ public class GetBooksByGenreIdQueryHandler : IRequestHandler<GetBooksByGenreIdQu
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingGenre = await _genreRepository.GetByIdAsync(request.GenreId);
+        var existingGenre = await _genreRepository.GetByIdAsync(request.GenreId, cancellationToken);
         if (existingGenre == null)
         {
             throw new NotFoundException($"Genre with id '{request.GenreId}' not found.");
         }
 
-        var books = await _bookRepository.GetBooksByGenreIdAsync(request.GenreId);
+        var books = await _bookRepository.GetBooksByGenreIdAsync(request.GenreId, cancellationToken);
 
         return _mapper.Map<IEnumerable<BookDTO>>(books);
     }

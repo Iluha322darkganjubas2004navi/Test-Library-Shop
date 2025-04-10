@@ -8,7 +8,7 @@ namespace Library.Infrastructure.Services.Interfaces
 {
     public interface IFileStorage
     {
-        Task<Stream> GetFileStreamAsync(string relativePath);
+        Task<Stream> GetFileStreamAsync(string relativePath, CancellationToken cancellationToken);
         Task<bool> SaveFileAsync(string relativePath, Stream fileStream, CancellationToken cancellationToken);
     }
 }

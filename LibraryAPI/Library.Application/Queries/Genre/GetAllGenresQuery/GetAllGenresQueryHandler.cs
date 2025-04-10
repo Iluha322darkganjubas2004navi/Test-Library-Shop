@@ -22,7 +22,7 @@ public class GetAllGenresQueryHandler : IRequestHandler<GetAllGenresQuery, IEnum
 
     public async Task<IEnumerable<GenreDTO>> Handle(GetAllGenresQuery request, CancellationToken cancellationToken)
     {
-        var genres = await _genreRepository.GetAllAsync();
+        var genres = await _genreRepository.GetAllAsync(cancellationToken);
         return _mapper.Map<IEnumerable<GenreDTO>>(genres);
     }
 }

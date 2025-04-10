@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Library.Application.Commands.Author.CreateAuthorCommand;
+using Library.Application.Exceptions;
 using Library.Domain.DTOs;
 using Library.Domain.Entities;
 using Library.Infrastructure.Repositories;
@@ -22,11 +23,8 @@ namespace Library.Tests.UseCases
         public AddAuthorUseCaseTests()
         {
             authorRepositoryMock = new Mock<IAuthorRepository>();
-
             mapperMock = new Mock<IMapper>();
-
             validatorMock = new Mock<IValidator<CreateAuthorCommand>>();
-
             handler = new CreateAuthorCommandHandler(
                 authorRepositoryMock.Object,
                 mapperMock.Object,
@@ -37,10 +35,6 @@ namespace Library.Tests.UseCases
         public async Task MyExecute_ValidRequest_AddsAuthorSuccessfully()
         {
             // Arrange
-            var authorRepositoryMock = new Mock<IAuthorRepository>();
-            var mapperMock = new Mock<IMapper>();
-            var validatorMock = new Mock<IValidator<CreateAuthorCommand>>();
-
             var dto = new CreateAuthor
             {
                 FirstName = "Ernest",
@@ -61,20 +55,15 @@ namespace Library.Tests.UseCases
 
             // Мокаем валидацию на успех
             validatorMock.Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
             // Мокаем маппинг DTO (CreateAuthor) в сущность (Author)
-            mapperMock.Setup(m => m.Map<Author>(dto)) // Изменили на маппинг DTO
-                      .Returns(expectedAuthor);
+            mapperMock.Setup(m => m.Map<Author>(dto))
+                .Returns(expectedAuthor);
 
             // Мокаем репозиторий на успешное добавление
-            authorRepositoryMock.Setup(repo => repo.AddAsync(expectedAuthor))
-                                .ReturnsAsync(expectedAuthor);
-
-            var handler = new CreateAuthorCommandHandler(
-                authorRepositoryMock.Object,
-                mapperMock.Object,
-                validatorMock.Object);
+            authorRepositoryMock.Setup(repo => repo.AddAsync(expectedAuthor, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedAuthor);
 
             // Act
             await handler.Handle(command, CancellationToken.None);
@@ -84,14 +73,16 @@ namespace Library.Tests.UseCases
             validatorMock.Verify(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()), Times.Once);
 
             // Проверяем, что маппер был вызван для DTO
-            mapperMock.Verify(m => m.Map<Author>(dto), Times.Once); // Изменили на проверку маппинга DTO
+            mapperMock.Verify(m => m.Map<Author>(dto), Times.Once);
 
-            // Проверяем, что метод AddAsync репозитория был вызван с правильной сущностью
-            authorRepositoryMock.Verify(repo => repo.AddAsync(It.Is<Author>(a =>
+            // Проверяем, что метод AddAsync репозитория был вызван с правильной сущностью и CancellationToken
+            authorRepositoryMock.Verify(repo => repo.AddAsync(
+                It.Is<Author>(a =>
                     a.FirstName == expectedAuthor.FirstName &&
                     a.LastName == expectedAuthor.LastName &&
                     a.Country == expectedAuthor.Country &&
-                    a.DateOfBirth == expectedAuthor.DateOfBirth)), Times.Once);
+                    a.DateOfBirth == expectedAuthor.DateOfBirth),
+                It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -118,6 +109,15 @@ namespace Library.Tests.UseCases
 
             // Act & Assert: ожидаем, что будет выброшено исключение валидации
             await Assert.ThrowsAsync<ValidationException>(() => handler.Handle(request, CancellationToken.None));
+
+            // Проверяем, что валидатор был вызван
+            validatorMock.Verify(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()), Times.Once);
+
+            // Проверяем, что маппер НЕ был вызван
+            mapperMock.Verify(m => m.Map<Author>(dto), Times.Never);
+
+            // Проверяем, что метод AddAsync репозитория НЕ был вызван
+            authorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Author>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Library.Application.Queries.User.GetUserByIdQuery
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var user = await _userRepository.GetByIdAsync(request.userId);
+            var user = await _userRepository.GetByIdAsync(request.userId, cancellationToken);
 
             if (user == null)
             {

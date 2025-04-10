@@ -12,39 +12,35 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         _dbSet = context.Set<TEntity>();
     }
 
-    public async Task<TEntity> AddAsync(TEntity entity)
+    public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var addedEntity = (await _dbSet.AddAsync(entity)).Entity;
-        await _context.SaveChangesAsync();
-
+        var addedEntity = (await _dbSet.AddAsync(entity, cancellationToken)).Entity;
+        await _context.SaveChangesAsync(cancellationToken);
         return addedEntity;
     }
 
-    public async Task<TEntity> DeleteAsync(TEntity entity)
+    public async Task<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var removedEntity = _dbSet.Remove(entity).Entity;
-        await _context.SaveChangesAsync();
-
-        return removedEntity;
-    }
-
-    public async Task<List<TEntity>> GetAllAsync()
-    {
-        return await _dbSet.ToListAsync();
-    }
-
-    public async Task<TEntity> GetByIdAsync(Guid id)
-    {
-        var entity = await _dbSet.Where(model => model.Id == id).FirstOrDefaultAsync();
-
+        _dbSet.Remove(entity);
+        await _context.SaveChangesAsync(cancellationToken);
         return entity;
     }
 
-    public async Task<TEntity> UpdateAsync(TEntity entity)
+    public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet.ToListAsync(cancellationToken);
+    }
+
+    public async Task<TEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbSet.Where(model => model.Id == id).FirstOrDefaultAsync(cancellationToken);
+        return entity;
+    }
+
+    public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         _dbSet.Update(entity);
-        await _context.SaveChangesAsync();
-
+        await _context.SaveChangesAsync(cancellationToken);
         return entity;
     }
 }

@@ -18,13 +18,13 @@ public class DeleteBookBorrowingCommandHandler : IRequestHandler<DeleteBookBorro
 
     public async Task<bool> Handle(DeleteBookBorrowingCommand request, CancellationToken cancellationToken)
     {
-        var existingBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.Id);
+        var existingBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.Id, cancellationToken);
         if (existingBorrowing == null)
         {
             throw new NotFoundException($"BookBorrowing with id '{request.Id}' not found.");
         }
 
-        await _bookBorrowingRepository.DeleteAsync(existingBorrowing);
+        await _bookBorrowingRepository.DeleteAsync(existingBorrowing, cancellationToken);
         return true;
     }
 }

@@ -33,7 +33,7 @@ public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, Gen
         }
 
         var genre = _mapper.Map<Domain.Entities.Genre>(request.CreateGenreDto);
-        await _genreRepository.AddAsync(genre);
+        await _genreRepository.AddAsync(genre, cancellationToken);
         return _mapper.Map<GenreDTO>(genre);
     }
 }

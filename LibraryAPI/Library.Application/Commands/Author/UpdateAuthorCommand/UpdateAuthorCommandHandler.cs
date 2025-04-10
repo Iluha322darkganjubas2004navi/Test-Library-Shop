@@ -32,14 +32,14 @@ public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, A
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingAuthor = await _authorRepository.GetByIdAsync(request.UpdateAuthorDto.Id);
+        var existingAuthor = await _authorRepository.GetByIdAsync(request.UpdateAuthorDto.Id, cancellationToken);
         if (existingAuthor == null)
         {
             throw new NotFoundException($"Author with id '{request.UpdateAuthorDto.Id}' not found.");
         }
 
         _mapper.Map(request.UpdateAuthorDto, existingAuthor);
-        await _authorRepository.UpdateAsync(existingAuthor);
+        await _authorRepository.UpdateAsync(existingAuthor, cancellationToken);
         return _mapper.Map<AuthorDTO>(existingAuthor);
     }
 }

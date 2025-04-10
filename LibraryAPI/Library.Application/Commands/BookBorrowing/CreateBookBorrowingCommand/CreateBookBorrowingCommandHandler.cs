@@ -40,13 +40,13 @@ public class CreateBookBorrowingCommandHandler : IRequestHandler<CreateBookBorro
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingBook = await _bookRepository.GetByIdAsync(request.CreateBookBorrowingDto.BookId);
+        var existingBook = await _bookRepository.GetByIdAsync(request.CreateBookBorrowingDto.BookId, cancellationToken);
         if (existingBook == null)
         {
             throw new NotFoundException($"Book with id '{request.CreateBookBorrowingDto.BookId}' not found.");
         }
 
-        var existingUser = await _userRepository.GetByIdAsync(request.CreateBookBorrowingDto.UserId);
+        var existingUser = await _userRepository.GetByIdAsync(request.CreateBookBorrowingDto.UserId, cancellationToken);
         if (existingUser == null)
         {
             throw new NotFoundException($"User with id '{request.CreateBookBorrowingDto.UserId}' not found.");
@@ -54,8 +54,8 @@ public class CreateBookBorrowingCommandHandler : IRequestHandler<CreateBookBorro
 
         var bookBorrowing = _mapper.Map<Domain.Entities.BookBorrowing>(request.CreateBookBorrowingDto);
         existingBook.IsBorrowed = true;
-        await _bookRepository.UpdateAsync(existingBook);
-        await _bookBorrowingRepository.AddAsync(bookBorrowing);
+        await _bookRepository.UpdateAsync(existingBook, cancellationToken);
+        await _bookBorrowingRepository.AddAsync(bookBorrowing, cancellationToken);
         return _mapper.Map<BookBorrowingDTO>(bookBorrowing);
     }
 }

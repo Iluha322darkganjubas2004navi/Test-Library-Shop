@@ -19,9 +19,9 @@ public class GetAllBookBorrowingsByUserIdQueryHandler : IRequestHandler<GetAllBo
     private readonly IValidator<GetAllBookBorrowingsByUserIdQuery> _validator;
 
     public GetAllBookBorrowingsByUserIdQueryHandler(IBookBorrowingRepository bookBorrowingRepository,
-                                                   IUserRepository userRepository,
-                                                   IMapper mapper,
-                                                   IValidator<GetAllBookBorrowingsByUserIdQuery> validator)
+                                                     IUserRepository userRepository,
+                                                     IMapper mapper,
+                                                     IValidator<GetAllBookBorrowingsByUserIdQuery> validator)
     {
         _bookBorrowingRepository = bookBorrowingRepository;
         _userRepository = userRepository;
@@ -37,13 +37,13 @@ public class GetAllBookBorrowingsByUserIdQueryHandler : IRequestHandler<GetAllBo
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingUser = await _userRepository.GetByIdAsync(request.UserId);
+        var existingUser = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
         if (existingUser == null)
         {
             throw new NotFoundException($"User with id '{request.UserId}' not found.");
         }
 
-        var borrowings = await _bookBorrowingRepository.GetBookBorrowingsByUserIdAsync(request.UserId);
+        var borrowings = await _bookBorrowingRepository.GetBookBorrowingsByUserIdAsync(request.UserId, cancellationToken);
         return _mapper.Map<IEnumerable<BookBorrowingDTO>>(borrowings);
     }
 }

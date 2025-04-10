@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Library.Application.Commands.Authorization.Login;
 using Library.Application.DTOs.Authorization;
 using Library.Application.Exceptions;
@@ -19,19 +20,27 @@ public class LoginCommandHandler(
     IUserRepository repository,
     IMapper mapper,
     IRefreshTokenRepository refreshTokenRepository,
-    ITokenService tokenService
+    ITokenService tokenService,
+    IValidator<LoginCommand> validator // Внедрили валидатор
 ) : IRequestHandler<LoginCommand, AuthenticationResult>
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly IUserRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
-    private readonly ITokenService _tokenService = tokenService; // Сохраняем внедренный сервис
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IValidator<LoginCommand> _validator = validator; // Сохранили валидатор
 
     public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
+
         var user = await _repository.GetUserAsync(u =>
-            u.Name == request.loginRequest.Name && u.Password == _tokenService.Hash(request.loginRequest.Password));
+                u.Name == request.loginRequest.Name && u.Password == _tokenService.Hash(request.loginRequest.Password), cancellationToken);
 
         if (user == null)
             throw new NotFoundException("User not found or invalid credentials");
@@ -49,7 +58,7 @@ public class LoginCommandHandler(
             AddedDate = DateTime.UtcNow
         };
 
-        await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+        await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
 
         return new AuthenticationResult(accessToken, refreshToken);
     }

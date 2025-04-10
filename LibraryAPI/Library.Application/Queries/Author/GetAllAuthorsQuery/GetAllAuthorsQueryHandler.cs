@@ -22,7 +22,7 @@ public class GetAllAuthorsQueryHandler : IRequestHandler<GetAllAuthorsQuery, IEn
 
     public async Task<IEnumerable<AuthorDTO>> Handle(GetAllAuthorsQuery request, CancellationToken cancellationToken)
     {
-        var authors = await _authorRepository.GetAllAsync();
+        var authors = await _authorRepository.GetAllAsync(cancellationToken);
         return _mapper.Map<IEnumerable<AuthorDTO>>(authors);
     }
 }

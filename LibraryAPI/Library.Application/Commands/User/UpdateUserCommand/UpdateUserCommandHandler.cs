@@ -34,7 +34,7 @@ namespace Library.Application.Commands.User.UpdateUserCommand
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var existingUser = await _userRepository.GetByIdAsync(request.updateUserDTO.Id);
+            var existingUser = await _userRepository.GetByIdAsync(request.updateUserDTO.Id, cancellationToken);
 
             if (existingUser == null)
             {
@@ -42,7 +42,7 @@ namespace Library.Application.Commands.User.UpdateUserCommand
             }
 
             _mapper.Map(request.updateUserDTO, existingUser);
-            await _userRepository.UpdateAsync(existingUser);
+            await _userRepository.UpdateAsync(existingUser, cancellationToken);
 
             return true;
         }

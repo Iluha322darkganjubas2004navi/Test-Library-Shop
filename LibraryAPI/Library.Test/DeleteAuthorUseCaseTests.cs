@@ -28,12 +28,12 @@ namespace Library.Tests.UseCases
             var authorIdToDelete = Guid.NewGuid();
 
             // Мокаем репозиторий, чтобы он возвращал существующего автора
-            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(authorIdToDelete))
-                                .ReturnsAsync(new Author { Id = authorIdToDelete });
+            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(authorIdToDelete, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Author { Id = authorIdToDelete });
 
             // Мокаем метод DeleteAsync
-            authorRepositoryMock.Setup(repo => repo.DeleteAsync(It.IsAny<Author>()))
-                     .ReturnsAsync(new Author { Id = It.IsAny<Guid>() }); // Возвращаем фиктивного Author
+            authorRepositoryMock.Setup(repo => repo.DeleteAsync(It.Is<Author>(a => a.Id == authorIdToDelete), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Author { Id = authorIdToDelete }); // Возвращаем того же автора
 
             var command = new DeleteAuthorCommand(authorIdToDelete);
 
@@ -41,11 +41,11 @@ namespace Library.Tests.UseCases
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            // Проверяем, что метод GetByIdAsync был вызван с правильным ID
-            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(authorIdToDelete), Times.Once);
+            // Проверяем, что метод GetByIdAsync был вызван с правильным ID и CancellationToken
+            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(authorIdToDelete, It.IsAny<CancellationToken>()), Times.Once);
 
-            // Проверяем, что метод DeleteAsync был вызван один раз
-            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.Is<Author>(a => a.Id == authorIdToDelete)), Times.Once);
+            // Проверяем, что метод DeleteAsync был вызван один раз с правильным автором и CancellationToken
+            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.Is<Author>(a => a.Id == authorIdToDelete), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -55,19 +55,19 @@ namespace Library.Tests.UseCases
             var nonExistingAuthorId = Guid.NewGuid();
 
             // Мокаем репозиторий, чтобы он возвращал null (автор не найден)
-            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(nonExistingAuthorId))
-                                .ReturnsAsync((Author)null);
+            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(nonExistingAuthorId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Author)null);
 
             var command = new DeleteAuthorCommand(nonExistingAuthorId);
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(command, CancellationToken.None));
 
-            // Проверяем, что метод GetByIdAsync был вызван с правильным ID
-            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(nonExistingAuthorId), Times.Once);
+            // Проверяем, что метод GetByIdAsync был вызван с правильным ID и CancellationToken
+            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(nonExistingAuthorId, It.IsAny<CancellationToken>()), Times.Once);
 
             // Проверяем, что метод DeleteAsync НЕ был вызван
-            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Author>()), Times.Never);
+            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Author>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -78,12 +78,12 @@ namespace Library.Tests.UseCases
             var expectedException = new Exception("Database error during deletion");
 
             // Мокаем репозиторий, чтобы он возвращал существующего автора
-            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(authorIdToDelete))
-                                .ReturnsAsync(new Author { Id = authorIdToDelete });
+            authorRepositoryMock.Setup(repo => repo.GetByIdAsync(authorIdToDelete, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Author { Id = authorIdToDelete });
 
             // Мокаем метод DeleteAsync, чтобы он выбрасывал исключение
-            authorRepositoryMock.Setup(repo => repo.DeleteAsync(It.IsAny<Author>()))
-                                .ThrowsAsync(expectedException);
+            authorRepositoryMock.Setup(repo => repo.DeleteAsync(It.IsAny<Author>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(expectedException);
 
             var command = new DeleteAuthorCommand(authorIdToDelete);
 
@@ -91,11 +91,11 @@ namespace Library.Tests.UseCases
             var exception = await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
             Assert.Equal(expectedException.Message, exception.Message);
 
-            // Проверяем, что метод GetByIdAsync был вызван
-            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(authorIdToDelete), Times.Once);
+            // Проверяем, что метод GetByIdAsync был вызван с правильным ID и CancellationToken
+            authorRepositoryMock.Verify(repo => repo.GetByIdAsync(authorIdToDelete, It.IsAny<CancellationToken>()), Times.Once);
 
-            // Проверяем, что метод DeleteAsync был вызван
-            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Author>()), Times.Once);
+            // Проверяем, что метод DeleteAsync был вызван с CancellationToken
+            authorRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Author>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

@@ -20,50 +20,40 @@ public class GenreController(IMediator mediator) : ControllerBase
     [HttpGet("GetAllGenres")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<GenreDTO>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<GenreDTO>>> GetAllGenres()
+    public async Task<ActionResult<IEnumerable<GenreDTO>>> GetAllGenres(CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetAllGenresQuery()));
+        return Ok(await _mediator.Send(new GetAllGenresQuery(), cancellationToken));
     }
 
     [HttpGet("GetGenreById/{genreId:guid}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(GenreDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<GenreDTO>> GetGenreById(Guid genreId)
+    public async Task<ActionResult<GenreDTO>> GetGenreById(Guid genreId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new GetGenreByIdQuery(genreId)));
+        return Ok(await _mediator.Send(new GetGenreByIdQuery(genreId), cancellationToken));
     }
 
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> CreateGenre([FromBody] CreateGenreCommand request)
+    public async Task<ActionResult<bool>> CreateGenre([FromBody] CreateGenreCommand request, CancellationToken cancellationToken)
     {
-        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request));
+        return StatusCode(StatusCodes.Status201Created, await _mediator.Send(request, cancellationToken));
     }
 
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> UpdateGenre([FromBody] UpdateGenreCommand updateGenreDto)
+    public async Task<ActionResult<bool>> UpdateGenre([FromBody] UpdateGenreCommand updateGenreDto, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(updateGenreDto));
+        return Ok(await _mediator.Send(updateGenreDto, cancellationToken));
     }
 
     [HttpDelete("{genreId:guid}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<bool>> DeleteGenre(Guid genreId)
+    public async Task<ActionResult<bool>> DeleteGenre(Guid genreId, CancellationToken cancellationToken)
     {
-        return Ok(await _mediator.Send(new DeleteGenreCommand(genreId)));
+        return Ok(await _mediator.Send(new DeleteGenreCommand(genreId), cancellationToken));
     }
 }

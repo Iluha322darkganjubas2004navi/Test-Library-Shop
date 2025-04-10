@@ -40,26 +40,26 @@ public class UpdateBookBorrowingCommandHandler : IRequestHandler<UpdateBookBorro
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.UpdateBookBorrowingDto.Id);
+        var existingBorrowing = await _bookBorrowingRepository.GetByIdAsync(request.UpdateBookBorrowingDto.Id, cancellationToken);
         if (existingBorrowing == null)
         {
             throw new NotFoundException($"BookBorrowing with id '{request.UpdateBookBorrowingDto.Id}' not found.");
         }
 
-        var existingBook = await _bookRepository.GetByIdAsync(request.UpdateBookBorrowingDto.BookId);
+        var existingBook = await _bookRepository.GetByIdAsync(request.UpdateBookBorrowingDto.BookId, cancellationToken);
         if (existingBook == null)
         {
             throw new NotFoundException($"Book with id '{request.UpdateBookBorrowingDto.BookId}' not found.");
         }
 
-        var existingUser = await _userRepository.GetByIdAsync(request.UpdateBookBorrowingDto.UserId);
+        var existingUser = await _userRepository.GetByIdAsync(request.UpdateBookBorrowingDto.UserId, cancellationToken);
         if (existingUser == null)
         {
             throw new NotFoundException($"User with id '{request.UpdateBookBorrowingDto.UserId}' not found.");
         }
 
         _mapper.Map(request.UpdateBookBorrowingDto, existingBorrowing);
-        await _bookBorrowingRepository.UpdateAsync(existingBorrowing);
+        await _bookBorrowingRepository.UpdateAsync(existingBorrowing, cancellationToken);
         return _mapper.Map<BookBorrowingDTO>(existingBorrowing);
     }
 }

@@ -31,7 +31,7 @@ public class GetBookByIsbnQueryHandler : IRequestHandler<GetBookByIsbnQuery, Boo
             throw new ValidationException(validationResult.Errors);
         }
 
-        var existingBook = await _bookRepository.GetBookByIsbnAsync(request.Isbn);
+        var existingBook = await _bookRepository.GetBookByIsbnAsync(request.Isbn, cancellationToken);
 
         if (existingBook == null)
         {

@@ -8,6 +8,7 @@ using Library.Application.DTOs.Authorization;
 using Library.Application.Commands.Authorization.RefreshToken;
 using Library.Application.Commands.Authorization.Logout;
 using Microsoft.AspNetCore.Authorization;
+using System.Threading;
 
 namespace Library.API.Controllers;
 
@@ -18,75 +19,36 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
     [HttpPost("Login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        var token = await mediator.Send(new LoginCommand(request));
-
-        return Ok(JsonConvert.SerializeObject(
-            new
-            {
-                token = token,
-            })
-        );
+        var token = await mediator.Send(new LoginCommand(request), cancellationToken);
+        return Ok(JsonConvert.SerializeObject(new { token = token }));
     }
 
     [HttpPost("Register")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        await mediator.Send(new RegisterCommand(request));
-
-        return Ok(JsonConvert.SerializeObject(
-            new
-            {
-                message = "Registration successful.",
-            })
-        );
+        await mediator.Send(new RegisterCommand(request), cancellationToken);
+        return Ok(JsonConvert.SerializeObject(new { message = "Registration successful." }));
     }
+
 
     [HttpPost("refresh-token")]
     [Authorize(Policy = "UserOnly")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new RefreshTokenCommand(request));
-
-        if (result != null)
-        {
-            return Ok(JsonConvert.SerializeObject(
-                new
-                {
-                    token = result.AccessToken,
-                    refreshToken = result.RefreshToken
-                })
-            );
-        }
-        else
-        {
-            return Unauthorized(JsonConvert.SerializeObject(new { error = "Invalid or expired Refresh Token." }));
-        }
+        var result = await mediator.Send(new RefreshTokenCommand(request), cancellationToken);
+        return Ok(JsonConvert.SerializeObject(new { token = result.AccessToken, refreshToken = result.RefreshToken }));
     }
     [HttpPost("logout")]
     [Authorize(Policy = "UserOnly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Logout([FromBody] string refreshToken)
+    public async Task<IActionResult> Logout([FromBody] string refreshToken, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(refreshToken))
-        {
-            return BadRequest(JsonConvert.SerializeObject(new { error = "Refresh Token is required." }));
-        }
-
-        await mediator.Send(new LogoutCommand(refreshToken));
-
+        await mediator.Send(new LogoutCommand(refreshToken), cancellationToken);
         return Ok(JsonConvert.SerializeObject(new { message = "Logged out successfully." }));
     }
 }
